@@ -16,5 +16,4 @@ function Speak-Text {
 }
 
 $randomFact = Get-Random -InputObject $catFacts
-
-Speak-Text -Text $randomFact
+Speak-Text -Text $randomFact -VoiceDescription "Zira"
