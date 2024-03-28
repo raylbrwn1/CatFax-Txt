@@ -20,5 +20,5 @@ while ($true) {
     
     Speak-Text -Text $randomFact
 
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 5
 }
