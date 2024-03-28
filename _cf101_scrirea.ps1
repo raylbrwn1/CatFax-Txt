@@ -15,10 +15,6 @@ function Speak-Text {
     }
 }
 
-while ($true) {
-    $randomFact = Get-Random -InputObject $catFacts
-    
-    Speak-Text -Text $randomFact
+$randomFact = Get-Random -InputObject $catFacts
 
-    Start-Sleep -Seconds 5
-}
+Speak-Text -Text $randomFact
