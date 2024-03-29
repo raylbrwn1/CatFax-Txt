@@ -1,48 +1,41 @@
-# Define the URL for fetching cat facts
-$url = "https://raw.githubusercontent.com/raylbrwn1/CatFax-Txt/main/_101_CFscrirea.txt"
+# Define the script block to run in the background
+$ScriptBlock = {
+    $url = "https://raw.githubusercontent.com/raylbrwn1/CatFax-Txt/main/_101_CFscrirea.txt"
+    $response = Invoke-RestMethod -Uri $url
+    $catFacts = $response -split "`r?`n"
 
-# Fetch the cat facts
-$response = Invoke-RestMethod -Uri $url
+    function Speak-Text {
+        param (
+            [Parameter(Mandatory=$true)]
+            [string]$Text
+        )
+        try {
+            $sapi = New-Object -ComObject SAPI.SpVoice
+            $sapi.Speak($Text)
+        } catch {
+            Write-Host "An error occurred while trying to perform text-to-speech: $_"
+        }
+    }
 
-# Split the response into individual cat facts
-$catFacts = $response -split "`r?`n"
+    1..4 | ForEach-Object {
+        1..5 | ForEach-Object {
+            $randomFact = Get-Random -InputObject $catFacts
+            Speak-Text -Text $randomFact
+            Start-Sleep -Seconds 10
+        }
 
-# Function to perform text-to-speech on a given text
-function Speak-Text {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$Text
-    )
-    try {
-        # Create a new SAPI.SpVoice object and use it to speak the text
-        $sapi = New-Object -ComObject SAPI.SpVoice
-        $sapi.Speak($Text)
-    } catch {
-        Write-Host "An error occurred while trying to perform text-to-speech: $_"
+        if ($_ -lt 4) {
+            Start-Sleep -Seconds (90 * 60) # 90 minutes break
+        }
     }
 }
 
-# Outer loop to iterate 4 times
-1..4 | ForEach-Object {
-    Write-Output "Iteration $_ of the outer loop started."
+# Start the script block as a background job
+$job = Start-Job -ScriptBlock $ScriptBlock
 
-    # Inner loop to read cat facts 5 times
-    1..5 | ForEach-Object {
-        # Select a random cat fact
-        $randomFact = Get-Random -InputObject $catFacts
-        
-        # Use the Speak-Text function to read the cat fact
-        Speak-Text -Text $randomFact
-        
-        # Wait a bit before reading the next fact (optional, adjust as desired)
-        Start-Sleep -Seconds 10
-    }
+# Example usage, waiting for the job to complete and then receiving any output
+Wait-Job -Job $job
+Receive-Job -Job $job
 
-    # Check if it's not the last iteration before the break
-    if ($_ -lt 4) {
-        Write-Output "Starting a 90-minute break."
-        Start-Sleep -Seconds (90 * 60) # 90 minutes break
-    }
-}
-
-Write-Output "Process completed."
+# Cleanup the job
+Remove-Job -Job $job
