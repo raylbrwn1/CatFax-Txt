@@ -18,7 +18,7 @@ $ScriptBlock = {
     }
 
     1..4 | ForEach-Object {
-        1..5 | ForEach-Object {
+        1..8 | ForEach-Object {
             $randomFact = Get-Random -InputObject $catFacts
             Speak-Text -Text $randomFact
             Start-Sleep -Seconds 10
