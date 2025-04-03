@@ -2,52 +2,38 @@ Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName PresentationCore
 Add-Type -AssemblyName WindowsBase
 
-# Path to the Mario GIF
-$marioPath = "$env:PUBLIC\Documents\Mario.gif"
+# Try to get system model
+try {
+    $model = Get-CimInstance -Class Win32_ComputerSystem | Select-Object -ExpandProperty Model
+    Write-Output "System Model: $model"
+} catch {
+    Write-Output "Unable to retrieve system model: $_"
+}
 
-# Check if file exists
-if (Test-Path $marioPath) {
-    # Build WPF window with transparent background and image
-    [xml]$xaml = @"
+[xml]$xaml = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        Width="250" Height="250"
-        WindowStyle="None"
-        AllowsTransparency="True"
-        Background="Transparent"
-        Topmost="True"
-        ShowInTaskbar="False">
+        Width="250" Height="250" WindowStyle="None"
+        AllowsTransparency="True" Background="Transparent"
+        Topmost="True" ShowInTaskbar="False">
     <Canvas Name="canvas">
-        <Image Name="mario" Width="250" Height="250" Source="$marioPath"/>
+        <Image Name="mario" Width="250" Height="250"
+               Source="C:\Users\Public\Documents\Mario.gif"/>
     </Canvas>
 </Window>
 "@
 
-    # Load XAML
-    $reader = (New-Object System.Xml.XmlNodeReader $xaml)
-    $window = [Windows.Markup.XamlReader]::Load($reader)
+$reader = (New-Object System.Xml.XmlNodeReader $xaml)
+$window = [Windows.Markup.XamlReader]::Load($reader)
 
-    # Get screen dimensions
-    $screenWidth = [System.Windows.SystemParameters]::PrimaryScreenWidth
-    $screenHeight = [System.Windows.SystemParameters]::PrimaryScreenHeight
+$window.Top = 600
+$window.Left = 0
+$window.Show()
 
-    # Position Mario low on screen
-    $window.Top = $screenHeight - 300
-    $window.Left = 0
+$screenWidth = [System.Windows.SystemParameters]::PrimaryScreenWidth
 
-    # Show window
-    $window.Show()
-
-    Write-Output "Mario started running..."
-
-    # Move Mario across screen
-    for ($x = 0; $x -lt $screenWidth; $x += 20) {
-        $window.Left = $x
-        Start-Sleep -Milliseconds 20
-    }
-
-    # Close window
-    $window.Close()
-    Write-Output "Mario finished running."
-} else {
-    Write-Output "File not found: $marioPath"
+for ($x = 0; $x -lt $screenWidth; $x += 15) {
+    $window.Left = $x
+    Start-Sleep -Milliseconds 20
 }
+
+$window.Close()
